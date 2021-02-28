@@ -133,6 +133,13 @@ class Trade:
         result, error = await self._t.get_swap_lightning_close_position(quantity, action)
         return result, error
 
+    async def get_klines(self,symbol, period, size):
+        """
+        获取市场行情
+        """
+        result, error = await self._t.get_klines(symbol, period, size)
+        return result, error
+
     async def revoke_order(self, *order_nos):
         """ Revoke (an) order(s).
 
