@@ -144,7 +144,7 @@ class HuobiUsdtSwapTrade(Websocket):
     async def _send_heartbeat_msg(self, *args, **kwargs):
         data = {"op": "pong", "ts": str(int(time.time()*1000))}
         if not self.ws:
-            logger.error("Websocket connection not yeah!", caller=self)
+            # logger.error("Websocket connection not yeah!", caller=self)
             return
         await self.ws.send_json(data)
 
@@ -179,7 +179,7 @@ class HuobiUsdtSwapTrade(Websocket):
     async def auth_callback(self, data):
         if data["err-code"] != 0:
             e = Error("Websocket connection authorized failed: {}".format(data))
-            logger.error(e, caller=self)
+            # logger.error(e, caller=self)
             SingleTask.run(self._init_success_callback, False, e)
             return
         self._subscribe_order_ok = False
@@ -213,7 +213,7 @@ class HuobiUsdtSwapTrade(Websocket):
     async def sub_callback(self, data):
         if data["err-code"] != 0:
             e = Error("subscribe {} failed!".format(data["topic"]))
-            logger.error(e, caller=self)
+            # logger.error(e, caller=self)
             SingleTask.run(self._init_success_callback, False, e)
             return
         if data["topic"] == self._order_channel:
@@ -234,7 +234,7 @@ class HuobiUsdtSwapTrade(Websocket):
                     self._update_order(order_info)
                 SingleTask.run(self._init_success_callback, True, None)
             else:
-                logger.warn("get open orders:", success, caller=self)
+                # logger.warn("get open orders:", success, caller=self)
                 e = Error("Get Open Orders Unknown error")
                 SingleTask.run(self._init_success_callback, False, e)
 
@@ -244,7 +244,7 @@ class HuobiUsdtSwapTrade(Websocket):
         @param raw 原始的压缩数据
         """
         data = json.loads(gzip.decompress(raw).decode())
-        logger.debug("data:", data, caller=self)
+        # logger.debug("data:", data, caller=self)
 
         op = data.get("op")
         if op == "ping":
@@ -387,7 +387,14 @@ class HuobiUsdtSwapTrade(Websocket):
             return None, error
         order_nos = [ order["order_id"] for order in result.get("data").get("success")]
         return order_nos, result.get("data").get("errors")
-        
+    
+    async def get_klines(self, symbol, per, size):
+        """
+        获取行情接口
+        """
+        result, error = await self._rest_api.get_klines(self._symbol, per, size)
+        return result, error
+
     async def revoke_order(self, *order_nos):
         """ Revoke (an) order(s).
 
@@ -544,7 +551,7 @@ class HuobiUsdtSwapTrade(Websocket):
             self._orders.pop(order_no)
         
         # publish order
-        logger.info("symbol:", order.symbol, "order:", order, caller=self)
+        # logger.info("symbol:", order.symbol, "order:", order, caller=self)
 
     def _update_position(self, data):
         """ Position update.
